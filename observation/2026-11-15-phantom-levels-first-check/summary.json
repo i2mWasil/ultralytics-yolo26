@@ -1,0 +1,71 @@
+{
+ "weights": "yolo26n.pt",
+ "gated": false,
+ "data": "<repo>/dataset/sampled_bdd100k_night_rain/data.yaml",
+ "images": 150,
+ "branch": "one2many+nms",
+ "conf": 0.25,
+ "iou": 0.5,
+ "imgsz": 640,
+ "anchors_per_level": {
+  "P3": 3840,
+  "P4": 960,
+  "P5": 240
+ },
+ "per_level": {
+  "P3": {
+   "boxes": 126,
+   "tp": 74,
+   "fp_bg": 14,
+   "fp_loc": 34,
+   "fp_obj": 4,
+   "fp_bg_lower_half": 2,
+   "unmapped": 1
+  },
+  "P4": {
+   "boxes": 281,
+   "tp": 205,
+   "fp_loc": 45,
+   "fp_bg": 24,
+   "fp_bg_lower_half": 17,
+   "fp_obj": 7
+  },
+  "P5": {
+   "boxes": 103,
+   "tp": 84,
+   "fp_obj": 12,
+   "fp_loc": 4,
+   "fp_bg": 3,
+   "fp_bg_lower_half": 1
+  }
+ },
+ "total": {
+  "boxes": 510,
+  "tp": 363,
+  "fp_bg": 41,
+  "fp_loc": 83,
+  "fp_obj": 23,
+  "fp_bg_lower_half": 20,
+  "unmapped": 1
+ },
+ "fp_bg_by_class": {
+  "P3": {
+   "traffic light": 5,
+   "person": 5,
+   "car": 4
+  },
+  "P4": {
+   "car": 18,
+   "traffic light": 5,
+   "bike": 1
+  },
+  "P5": {
+   "car": 1,
+   "truck": 1,
+   "train": 1
+  }
+ },
+ "objects": 2441,
+ "matched": 363,
+ "images_with_regions": null
+}

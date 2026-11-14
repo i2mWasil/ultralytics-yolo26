@@ -15,6 +15,7 @@ import torch
 from torch import nn
 
 from ultralytics.nn.autobackend import check_class_names
+from ultralytics.nn.modules.rgate import ReflectionGate, RGateE2ELoss  # RGATE
 from ultralytics.nn.modules import (
     AIFI,
     C1,
@@ -192,6 +193,7 @@ class BaseModel(torch.nn.Module):
                 `embed` is given.
         """
         y, dt, embeddings = [], [], []  # outputs
+        img = x  # RGATE: keep the network input for layers that need it
         embed = frozenset(embed) if embed else {-1}
         max_idx = max(embed)
         for m in self.model:
@@ -199,7 +201,7 @@ class BaseModel(torch.nn.Module):
                 x = y[m.f] if isinstance(m.f, int) else [x if j == -1 else y[j] for j in m.f]  # from earlier layers
             if profile:
                 self._profile_one_layer(m, x, dt)
-            x = m(x)  # run
+            x = m(x, img) if getattr(m, "needs_image", False) else m(x)  # run (RGATE)
             y.append(x if m.i in self.save else None)  # save output
             if m.i in embed:
                 embeddings.append(torch.nn.functional.adaptive_avg_pool2d(x, (1, 1)).squeeze(-1).squeeze(-1))  # flatten
@@ -650,6 +652,8 @@ class DetectionModel(BaseModel):
 
     def init_criterion(self):
         """Initialize the loss criterion for the DetectionModel."""
+        if any(isinstance(m, ReflectionGate) for m in self.model):  # RGATE
+            return RGateE2ELoss(self)
         return E2ELoss(self) if getattr(self.model[-1], "one2one_cv2", None) is not None else v8DetectionLoss(self)
 
 
@@ -2237,6 +2241,9 @@ def parse_model(d, ch, verbose=True):
             c2 = args[0]
             c1 = ch[f]
             args = [*args[1:]]
+        elif m is ReflectionGate:  # RGATE: same channels in and out
+            c1 = c2 = ch[f]
+            args = [c1, *args]
         else:
             c2 = ch[f]
 
